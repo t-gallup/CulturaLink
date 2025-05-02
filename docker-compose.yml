@@ -1,0 +1,47 @@
+services:
+  apify-mcp-server:
+    build:
+      context: ./apify-mcp-server
+    container_name: apify-mcp-server
+    ports:
+      - "8001:8001"
+    environment:
+      - APIFY_API_TOKEN=${APIFY_API_TOKEN}
+    restart: unless-stopped
+
+  deepl-mcp-server:
+    build:
+      context: ./deepl-mcp-server
+    container_name: deepl-mcp-server
+    ports:
+      - "8002:8002"
+    environment:
+      - DEEPL_AUTH_KEY=${DEEPL_AUTH_KEY}
+    restart: unless-stopped
+
+  claude-mcp-server:
+    build:
+      context: ./claude-mcp-server
+    container_name: claude-mcp-server
+    ports:
+      - "8003:8003"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    restart: unless-stopped
+
+  orchestrator:
+    build:
+      context: ./orchestrator
+    container_name: culturalink-orchestrator
+    ports:
+      - "8080:8080"
+    environment:
+      - APIFY_MCP_URL=http://apify-mcp-server:8001/
+      - DEEPL_MCP_URL=http://deepl-mcp-server:8002/
+      - CLAUDE_MCP_URL=http://claude-mcp-server:8003/
+      - APIFY_ACTOR_ID=${APIFY_ACTOR_ID}
+    depends_on:
+      - apify-mcp-server
+      - deepl-mcp-server
+      - claude-mcp-server
+    restart: unless-stopped

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CulturaLink - Cultural Translator Agent</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #0066cc;
+            text-align: center;
+            margin-bottom: 0;
+        }
+        
+        .tagline {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-family: inherit;
+            margin-bottom: 10px;
+            resize: vertical;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .country-select {
+            width: 48%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #004c99;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .results-container {
+            margin-top: 20px;
+        }
+        
+        .results-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #0066cc;
+        }
+        
+        #results {
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            min-height: 100px;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            background-color: #f9f9f9;
+        }
+        
+        .source {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CulturaLink</h1>
+        <p class="tagline">Your cultural translator to understand the world</p>
+        
+        <textarea id="query" placeholder="Ask about customs, traditions, news, or social norms in any country...
+Examples:
+- Why do Koreans take off their shoes inside?
+- What are French farmers protesting about?
+- What's trending in Japanese pop culture right now?"></textarea>
+        
+        <div class="controls">
+            <select id="country" class="country-select">
+                <option value="">All Countries (Optional)</option>
+                <option value="JP">Japan</option>
+                <option value="KR">South Korea</option>
+                <option value="TR">Turkey</option>
+                <option value="FR">France</option>
+                <option value="IN">India</option>
+                <option value="NG">Nigeria</option>
+                <option value="BR">Brazil</option>
+                <option value="MX">Mexico</option>
+            </select>
+            
+            <button id="askButton">Translate Culture</button>
+        </div>
+        
+        <div class="results-container">
+            <div class="results-header">Cultural Context:</div>
+            <div id="results">Your cultural insights will appear here...</div>
+            <div id="source" class="source"></div>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('askButton').addEventListener('click', async () => {
+            const query = document.getElementById('query').value;
+            const country = document.getElementById('country').value;
+            const resultsElement = document.getElementById('results');
+            const sourceElement = document.getElementById('source');
+            
+            if (!query) {
+                resultsElement.textContent = "Please enter a question about culture, customs, or current events.";
+                return;
+            }
+            
+            // Show loading state
+            const button = document.getElementById('askButton');
+            button.disabled = true;
+            button.textContent = "Translating Culture...";
+            resultsElement.textContent = "Searching for cultural context...";
+            sourceElement.textContent = "";
+            
+            try {
+                // Replace with your deployed API URL if needed
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        query: query,
+                        country_code: country 
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                resultsElement.textContent = data.context;
+                
+                if (data.source_url) {
+                    sourceElement.textContent = `Source: ${data.source_url}`;
+                    sourceElement.innerHTML = `Source: <a href="${data.source_url}" target="_blank">${data.source_url}</a>`;
+                } else {
+                    sourceElement.textContent = "";
+                }
+            } catch (error) {
+                resultsElement.textContent = `An error occurred: ${error.message}`;
+            } finally {
+                // Reset button state
+                button.disabled = false;
+                button.textContent = "Translate Culture";
+            }
+        });
+    </script>
+</body>
+</html>
